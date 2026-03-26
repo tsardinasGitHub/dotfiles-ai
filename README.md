@@ -34,10 +34,16 @@ cursor/
 gentle-ai install --agent cursor,vscode-copilot --preset full-gentleman
 ```
 
+> **Problema conocido en Windows:** Cursor no crea `settings.json` hasta que cambias algo en la configuración. Si el instalador falla, créalo manualmente y re-ejecuta:
+> ```powershell
+> echo '{}' | Out-File -FilePath "$env:USERPROFILE\.cursor\settings.json" -Encoding utf8 -NoNewline
+> gentle-ai install --agent cursor,vscode-copilot --preset full-gentleman
+> ```
+
 Luego clonar este repo y ejecutar:
 
 ```powershell
-git clone git@github.com:tsard/dotfiles-ai.git "$env:USERPROFILE\dotfiles-ai"
+git clone git@github.com:tsardinasGitHub/dotfiles-ai.git "$env:USERPROFILE\dotfiles-ai"
 cd "$env:USERPROFILE\dotfiles-ai"
 
 # Ver qué haría sin tocar nada
@@ -45,6 +51,12 @@ cd "$env:USERPROFILE\dotfiles-ai"
 
 # Aplicar
 .\restore.ps1
+```
+
+Activar el sync automático diario (requiere administrador):
+
+```powershell
+.\register-task.ps1
 ```
 
 Reiniciar Cursor y VS Code. Listo.
@@ -131,6 +143,11 @@ El riesgo de solo usar OneDrive: si restauras `~\.cursor\skills\` completa en un
 **Configurar OneDrive (una sola vez, PowerShell como administrador):**
 
 OneDrive solo sincroniza lo que está dentro de su carpeta. La solución es mover las carpetas adentro de OneDrive y crear symlinks en la ubicación original — Cursor no nota la diferencia.
+
+> **Importante para Engram:** los archivos `engram.db` están bloqueados mientras Cursor esté abierto. Antes de ejecutar el bloque de abajo, **cierra Cursor completamente** (incluyendo el proceso en segundo plano):
+> ```powershell
+> Get-Process | Where-Object { $_.Name -like "*cursor*" } | Stop-Process -Force
+> ```
 
 ```powershell
 # Crear carpetas de destino en OneDrive
