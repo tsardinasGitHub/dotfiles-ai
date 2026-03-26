@@ -448,30 +448,11 @@ El skill `sdd-init` detecta el stack, lee convenciones existentes (`AGENTS.md`, 
 
 #### Paso 2 — Registrar los skills personalizados en Engram
 
-Este es el paso clave. Hacelo UNA SOLA VEZ por proyecto:
+Después de ejecutar `sdd-init` (Paso 1), el sistema debería generar el skill registry para ese proyecto:
+- crea `.atl/skill-registry.md` en la raíz del repo
+- y actualiza el registry en Engram para que el orquestador resuelva paths y cargue skills automáticamente
 
-**Para proyectos Elixir** (como Leasing):
-```
-Guardá en Engram el skill registry para este proyecto con topic_key "skill-registry/leasing":
-- elixir-phoenix-stack: C:\Users\tsard\.cursor\skills\elixir-phoenix-stack\SKILL.md
-- elixir-antipatterns: C:\Users\tsard\.cursor\skills\elixir-antipatterns\SKILL.md
-- elixir-error-monad: C:\Users\tsard\.cursor\skills\elixir-error-monad\SKILL.md
-- elixir-legacy-strategy: C:\Users\tsard\.cursor\skills\elixir-legacy-strategy\SKILL.md
-- elixir-amnesia-mnesia: C:\Users\tsard\.cursor\skills\elixir-amnesia-mnesia\SKILL.md
-- testing-conventions: C:\Users\tsard\.cursor\skills\testing-conventions\SKILL.md
-```
-
-**Para proyectos React + Python** (como PAE):
-```
-Guardá en Engram el skill registry para este proyecto con topic_key "skill-registry/pae":
-- react-python-stack: C:\Users\tsard\.cursor\skills\react-python-stack\SKILL.md
-- react-advanced: C:\Users\tsard\.cursor\skills\react-advanced\SKILL.md
-- python-fastapi-ddd: C:\Users\tsard\.cursor\skills\python-fastapi-ddd\SKILL.md
-- python-antipatterns: C:\Users\tsard\.cursor\skills\python-antipatterns\SKILL.md
-- testing-conventions: C:\Users\tsard\.cursor\skills\testing-conventions\SKILL.md
-```
-
-A partir de este momento el orquestador encontrará y cargará estos skills automáticamente en cada sesión futura de ese proyecto — sin que tengas que hacer nada más.
+Si en VS Code Copilot (u otro editor) todavía no te aparecen tus skills personalizadas, repetí este Paso 2 una vez **en ese editor** para forzar la regeneración del registry desde ese contexto.
 
 #### Paso 3 — Crear el AGENTS.md del proyecto
 
@@ -510,12 +491,10 @@ Cada vez que creás un skill nuevo, el flujo es:
 
 ```
 1. Crear el skill con skill-creator → se sincroniza solo a ambos editores (regla skill-sync)
-2. Para cada proyecto que deba usarlo, actualizá su Engram registry:
-   "Agregá este skill al registry de Engram del proyecto X:
-    [nombre]: C:\Users\tsard\.cursor\skills\[nombre]\SKILL.md"
+2. Para cada proyecto que deba usarlo, repetí `sdd-init` una vez en ese repo para regenerar `.atl/skill-registry.md` y actualizar Engram
 ```
 
-El paso 2 es por proyecto, pero se hace una sola vez. Engram es persistente — no hay que repetirlo en cada sesión.
+El paso 2 es por proyecto (y, si alternás editor, también por editor si ese editor no lo regeneró aún). Se hace una sola vez y luego funciona solo.
 
 ---
 
@@ -527,12 +506,12 @@ Una vez que tienes la Fase 0, 1 y 2 hechas, el flujo diario es:
 
 Nada más. El agente ya tiene:
 - Contexto de sesiones anteriores (Engram)
-- Skills de tu stack cargados automáticamente desde Engram (el orquestador los busca con `mem_search("skill-registry", project)`)
+- Skills de tu stack cargados automáticamente a partir del registry generado por `sdd-init` (el orquestador los resuelve con `mem_search("skill-registry", project)`)
 - Convenciones del proyecto cargadas desde `AGENTS.md` (regla `auto-registry`)
 - Documentación actualizada disponible (Context7)
 - SDD listo para activarse cuando lo necesite (orquestador)
 
-> Esto funciona así siempre que hayas hecho el **Paso 2 de la Fase 2** al abrir el proyecto por primera vez (registrar los skills en Engram). Es un setup de una sola vez.
+> Esto funciona así siempre que hayas hecho el **Paso 1/2 de la Fase 2** al abrir el proyecto por primera vez (en cada editor si hace falta). Es un setup de una sola vez.
 
 #### Lo que PUEDES decirle al agente para sacar más partido:
 
