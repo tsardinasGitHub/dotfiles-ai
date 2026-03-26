@@ -1,4 +1,4 @@
-# Gentle AI — Onboarding Completo
+﻿# Gentle AI — Onboarding Completo
 
 > **Configurado para:** React + Python / Elixir | Cursor + VS Code Copilot | Windows
 
@@ -80,11 +80,11 @@ La **regla de oro**: cuanto menos pienses en Gentle AI después de instalarlo, m
 - **Feature sustancial** → el agente sugiere "esto merece SDD, ¿empezamos?"
 - **Tú lo pides explícitamente** → escribe `"usa sdd"` o `"hazlo con sdd"` en el chat
 
-**Sub-agentes**: en Cursor y VS Code Copilot, cuando SDD se activa el orquestador delega cada fase a un sub-agente especializado. Cada sub-agente busca el skill registry, carga los skills relevantes para tu proyecto, ejecuta su fase y persiste el resultado en Engram antes de retornar. El siguiente sub-agente lo recoge desde donde el anterior lo dejó.
+**Sub-agentes**: en Cursor y VS Code Copilot, cuando SDD se activa el orquestador delega cada fase a un sub-agente especializado. Cada sub-agente lee los SKILL.md relevantes para el proyecto, ejecuta su fase y persiste el resultado en Engram antes de retornar. El siguiente sub-agente lo recoge desde donde el anterior lo dejó.
 
 **Personalización global**: crea un skill de stack (ver Fase 1 de la guía práctica). El sub-agente `sdd-apply` cargará automáticamente tus convenciones de React o Elixir cuando trabaje en esos proyectos.
 
-**Personalización local por repo**: crea un archivo `AGENTS.md` o `.cursorrules` en la raíz del repo con tus convenciones específicas. El skill registry los detecta y los incluye en el contexto del orquestador.
+**Personalización local por repo**: crea un archivo `AGENTS.md` en la raíz del repo con tus convenciones específicas. La regla `auto-registry` lo lee automáticamente al inicio de cada sesión y lo añade al contexto del agente.
 
 ---
 
@@ -92,7 +92,7 @@ La **regla de oro**: cuanto menos pienses en Gentle AI después de instalarlo, m
 
 **Qué son**: archivos Markdown con instrucciones precisas para el agente sobre cómo hacer algo específico. No son código — son conocimiento estructurado que el agente lee y aplica.
 
-**Cómo los carga el agente**: a través del skill registry (`.atl/skill-registry.md`). El orquestador lee el registry al inicio de la sesión y sabe exactamente qué skills existen, dónde están y cuándo aplicarlos.
+**Cómo los carga el agente**: leyendo directamente el archivo `SKILL.md` de cada skill desde su path absoluto en `~\.cursor\skills\`. La regla global `auto-stack` detecta el stack del proyecto y le indica al agente exactamente qué archivos SKILL.md leer al inicio de la sesión. No hay un archivo de índice intermedio — el agente lee el SKILL.md y aplica su contenido como instrucciones activas.
 
 **Los 11 skills instalados globalmente**:
 
@@ -168,7 +168,7 @@ La **regla de oro**: cuanto menos pienses en Gentle AI después de instalarlo, m
 
 **Recomendación**: `gentleman` es la opción correcta si quieres crecer como desarrollador. `neutral` si solo quieres ejecución rápida.
 
-**Personalización por repo**: crea un `AGENTS.md` en la raíz del repo con instrucciones adicionales. El skill registry las detecta y las añade al contexto sin sobreescribir la persona base.
+**Personalización por repo**: crea un `AGENTS.md` en la raíz del repo con instrucciones adicionales. La regla `auto-registry` lo lee al inicio de cada sesión y lo añade al contexto sin sobreescribir la persona base.
 
 ---
 
@@ -335,7 +335,7 @@ gentle-ai -v
 **Diferencias importantes para tu setup**:
 - Cursor y VS Code Copilot no tienen slash commands — todo se hace en lenguaje natural en el chat
 - Multi-mode SDD (diferentes modelos por fase) es exclusivo de OpenCode
-- El skill registry funciona igual en ambos editores — el archivo `.atl/skill-registry.md` es por proyecto, no por editor
+- Las reglas `auto-stack` y `auto-registry` funcionan igual en ambos editores — los paths de los SKILL.md son absolutos y accesibles desde cualquier editor
 
 ---
 
@@ -378,8 +378,7 @@ Esto es crítico para entender qué es seguro personalizar:
 | MCP servers | `%USERPROFILE%\.cursor\mcp.json` | `%APPDATA%\Code\User\mcp.json` |
 | Settings | `%USERPROFILE%\.cursor\settings.json` | `%APPDATA%\Code\User\settings.json` |
 | Backups gentle-ai | `%USERPROFILE%\.gentle-ai\backups\` | (mismo) |
-| Skill registry (por proyecto) | `.atl\skill-registry.md` | (mismo archivo) |
-| Skills locales (por proyecto) | `.atl\skills\` | (mismo directorio) |
+| Convenciones del proyecto | `AGENTS.md` en raíz del repo | (mismo archivo) |
 | GGA config | `%USERPROFILE%\.config\gga\` | (mismo) |
 
 ---
@@ -505,37 +504,39 @@ de testing que aplican a todos nuestros proyectos:
 
 ### Fase 2 — Cada vez que abres un repo nuevo
 
-> Esto es lo único que debes hacer por repo. Son 2 minutos.
+> Con las reglas globales instaladas, esto es prácticamente automático.
 
 #### Paso 1 — Abrir el repo en tu editor
 
-Ábrelo normalmente en Cursor o VS Code.
+Ábrelo normalmente en Cursor o VS Code. La regla `auto-stack` detectará el stack al inicio de la conversación y cargará los skills correspondientes leyendo sus archivos SKILL.md directamente. La regla `auto-registry` leerá el `AGENTS.md` del proyecto si existe.
 
-#### Paso 2 — Inicializar el skill registry
+**No necesitas hacer nada más para que los skills se carguen.**
 
-En el chat del agente, escribe:
+#### Paso 2 (recomendado) — Crear el AGENTS.md del proyecto
+
+Si el repo no tiene `AGENTS.md`, créalo en la raíz con las convenciones específicas de ese proyecto:
+
+```markdown
+# NombreProyecto — Convenciones del proyecto
+
+## Stack
+Elixir 1.16 / Phoenix 1.7 / [lo que aplique]
+
+## Módulos principales
+- `MiApp.Modulo` — descripción
+
+## Decisiones de arquitectura
+- Usamos X porque Y
+```
+
+Este archivo es leído automáticamente por el agente al inicio de cada sesión y complementa los skills globales con contexto específico del repo.
+
+#### Paso 3 (opcional) — Verificar qué skills están activos
+
+Si quieres confirmar que los skills se cargaron, pregúntale al agente:
 
 ```
-Inicializa el skill registry para este proyecto.
-```
-
-El agente ejecutará la lógica del `skill-registry`: escaneará todos los skills globales (`~\.cursor\skills\` o `~\.copilot\skills\`), leerá el frontmatter de cada uno, detectará si hay archivos de convenciones locales (`AGENTS.md`, `.cursorrules`, `CLAUDE.md`), y generará `.atl\skill-registry.md` en la raíz del repo.
-
-**Qué contiene ese archivo**:
-- Un índice de todos los skills disponibles con sus rutas
-- Cuándo aplicar cada uno
-- Las convenciones locales del proyecto detectadas
-
-A partir de este momento, el orquestador SDD sabe exactamente qué skills tiene disponibles y cuándo usarlos.
-
-#### Paso 3 (opcional) — Contextualizar el proyecto
-
-Si es un proyecto con arquitectura particular o decisiones importantes, dale contexto al agente:
-
-```
-Este es un proyecto de [tipo]. Usamos [stack específico].
-Las decisiones importantes de arquitectura son: [X, Y, Z].
-El agente debe cargar el skill "react-python-stack" / "elixir-phoenix-stack" para este proyecto.
+¿Qué skills tenés cargados en esta sesión?
 ```
 
 Engram guardará este contexto y estará disponible en todas las sesiones futuras de este repo.
@@ -560,7 +561,8 @@ Una vez que tienes la Fase 0, 1 y 2 hechas, el flujo diario es:
 
 Nada más. El agente ya tiene:
 - Contexto de sesiones anteriores (Engram)
-- Skills de tu stack cargados (skill registry)
+- Skills de tu stack cargados automáticamente (regla `auto-stack`)
+- Convenciones del proyecto cargadas (regla `auto-registry` lee el `AGENTS.md`)
 - Documentación actualizada disponible (Context7)
 - SDD listo para activarse cuando lo necesite (orquestador)
 
@@ -578,7 +580,7 @@ Nada más. El agente ya tiene:
 
 #### Lo que NO debes hacer:
 
-- Explicar tus convenciones en cada sesión — si lo estás haciendo, el skill registry no está bien configurado
+- Explicar tus convenciones en cada sesión — si lo estás haciendo, los skills no se están cargando; verifica con `"¿qué skills tenés cargados?"`
 - Memorizar las fases SDD — si lo estás haciendo, estás usando SDD demasiado manualmente
 - Interactuar con Engram directamente — si lo estás haciendo, algo está mal
 
@@ -600,17 +602,14 @@ gentle-ai upgrade             # ejecutar
 gentle-ai sync --agent cursor,vscode-copilot
 ```
 
-#### Después de `sync`, en el primer repo que abras:
+#### Después de `sync`:
 
-```
-Actualiza el skill registry, puede haber skills nuevos del último sync de gentle-ai.
-```
+No necesitas hacer nada extra. La regla `auto-stack` carga los skills directamente desde sus archivos — si los archivos fueron actualizados por el sync, la próxima sesión los tendrá automáticamente.
 
-#### Cuándo re-ejecutar el skill registry en un repo:
+#### Cuándo actualizar la regla `auto-stack`:
 
-- Después de un `gentle-ai sync` (puede haber skills nuevos)
-- Después de crear un skill nuevo (global o local)
-- Después de modificar un skill existente
+- Después de crear un skill nuevo propio (agregar su path a `auto-stack.mdc`)
+- Si renombraste un skill existente
 - Cuando añadas un `AGENTS.md` o `.cursorrules` al proyecto
 - Si el agente parece ignorar convenciones que debería conocer
 
@@ -699,7 +698,7 @@ Actualiza el skill registry
 
 Esta sección responde a una pregunta crítica: si abres el mismo repo en Cursor un día y en VS Code Copilot al siguiente, ¿qué se comparte y qué no? ¿Tienes que hacer algo extra para mantener la consistencia?
 
-La respuesta corta: **Engram es completamente compartido. Los skills necesitan sincronización manual. El skill registry puede necesitar regenerarse al cambiar de editor.**
+La respuesta corta: **Engram es completamente compartido. Los skills personalizados se sincronizan automáticamente vía la regla `skill-sync`. Las reglas globales (`auto-stack`, `auto-registry`) están instaladas en ambos editores y funcionan igual.**
 
 ---
 
@@ -768,22 +767,13 @@ Get-ChildItem $cursorSkills -Directory | Where-Object {
 
 ---
 
-### Skill Registry — Un archivo, dos vistas distintas
+### Skills — Cómo los carga cada editor
 
-El archivo `.atl\skill-registry.md` vive en el repo y es generado por el agente. El detalle importante: cuando el agente genera el registry, escribe las **rutas absolutas de los skills según su propio directorio**.
+La regla `auto-stack` usa **paths absolutos** en los SKILL.md. Esos paths apuntan a `C:\Users\tsard\.cursor\skills\` — accesibles desde cualquier editor en la misma máquina. No hay archivo de índice ni nada que regenerar al cambiar de editor.
 
-- Si lo genera Cursor → las rutas apuntan a `%USERPROFILE%\.cursor\skills\`
-- Si lo genera VS Code Copilot → las rutas apuntan a `%USERPROFILE%\.copilot\skills\`
-
-En la práctica esto funciona igualmente porque ambos directorios existen en tu máquina y cualquier editor puede leer archivos de cualquier ruta. Pero si notas que el agente en un editor no parece "ver" los skills bien después de haber generado el registry con el otro, la solución es simple:
-
-```
-Regenera el skill registry para este proyecto.
-```
-
-El agente lo rehará con las rutas correctas para el editor actual.
-
-**Recomendación práctica**: si tienes un repo donde trabajas 80% en Cursor y 20% en VS Code, genera el registry con Cursor y no te preocupes. Solo regeneralo si detectas comportamiento inconsistente al usar VS Code en ese repo.
+Si en VS Code el agente no aplica los skills correctamente, la causa es siempre una de dos:
+1. El SKILL.md no está en `~\.copilot\skills\` → la regla `skill-sync` lo habrá sincronizado, pero si no, cópialo manualmente
+2. La regla `auto-stack` no se aplicó → pregúntale al agente `"¿qué skills tenés cargados?"` para verificar
 
 ---
 
@@ -805,7 +795,7 @@ La fuente de datos es la misma. La forma de conectarse es diferente por limitaci
 | **Engram (memoria)** | ✅ Sí — mismo `engram.db` | Nada |
 | **Skills gestionados** (sdd-*, go-testing…) | ✅ Sí — gentle-ai los instala en ambos | Nada |
 | **Skills personalizados** (tus stacks) | ✅ Auto — regla `skill-sync` los sincroniza bidireccional | Nada (el agente lo hace al crear/modificar) |
-| **Skill registry** (`.atl/skill-registry.md`) | ✅ Sí — mismo archivo en el repo | Regenerar si cambias de editor primario |
+| **AGENTS.md** (convenciones del repo) | ✅ Sí — mismo archivo en el repo | Nada |
 | **Context7** | ✅ Sí — misma fuente de docs | Nada |
 | **Persona / Orquestador** | ✅ Sí — gentle-ai lo instala en ambos | Nada |
 | **MCP servers** | ✅ Sí — configurados en ambos | Nada |
@@ -818,20 +808,15 @@ La fuente de datos es la misma. La forma de conectarse es diferente por limitaci
 
 Elige un editor principal por proyecto y úsalo consistentemente. El otro editor siempre lo tienes disponible pero no lo alternas en el mismo repo. La memoria de Engram se comparte de todas formas, así que si algún día abres el repo en el otro editor, tendrá contexto.
 
-**Opción B: Alternancia libre** (requiere un paso extra)
+**Opción B: Alternancia libre** (sin pasos extra)
 
 Si quieres alternar libremente entre editores en el mismo proyecto:
 
-1. La sincronización de skills es **automática** — la regla `skill-sync` lo hace por ti al crear o modificar cualquier skill propio.
-2. La primera vez que abres el repo en el "segundo" editor, regenera el registry:
-   ```
-   Regenera el skill registry para este proyecto
-   ```
-3. A partir de ahí, alterna libremente — Engram mantiene la continuidad.
+1. La sincronización de skills es **automática** — la regla `skill-sync` lo hace por ti.
+2. Los SKILL.md usan paths absolutos — funcionan desde cualquier editor sin configuración adicional.
+3. Engram mantiene la continuidad de memoria entre editores.
 
-**Regla práctica**: si en VS Code Copilot el agente parece "menos informado" que en Cursor sobre un proyecto, o no aplica las convenciones de stack correctas, siempre es una de dos cosas:
-1. El skill personalizado no está en `~\.copilot\skills\` → pídele al agente que lo sincronice, o usa el script manual de PowerShell de la sección anterior
-2. El skill registry tiene rutas de Cursor → regenera el registry
+**Regla práctica**: si en VS Code Copilot el agente no aplica las convenciones de stack, pregúntale `"¿qué skills tenés cargados?"`. Si no lista los skills esperados, verifica que el SKILL.md exista en `~\.copilot\skills\`.
 
 ---
 
@@ -864,30 +849,13 @@ Los archivos ya están creados en tu máquina:
 
 ---
 
-### Automatizar el check del skill registry — regla global de auto-verificación
+### Regla global de auto-registry — cargar AGENTS.md automáticamente
 
-El paso de "inicializa el skill registry" puede volverse completamente automático sin necesidad de git hooks ni scripts. La solución es crear una regla global permanente que le instruye al agente a comprobar el registry por su cuenta al inicio de cada sesión.
+Al inicio de cada sesión, la regla `auto-registry` lee el `AGENTS.md` del proyecto si existe y aplica sus convenciones en silencio. No hay ningún paso manual necesario.
 
-> **Por qué no git hooks**: los hooks ejecutan shell scripts, no comandos de agente IA. No hay forma de que un hook le diga al agente "ejecuta el skill registry" — el agente no tiene interfaz CLI para eso. GGA usa hooks para cambiar proveedores porque eso sí es una operación de shell. El skill registry no lo es.
-
-Los archivos ya están creados en tu máquina en rutas que gentle-ai nunca toca:
-
-**Cursor**: `%USERPROFILE%\.cursor\rules\auto-registry.mdc`
-```
----
-description: Auto-check skill registry at session start
-alwaysApply: true
----
-At the start of every new conversation, before doing anything else:
-1. Check if .atl/skill-registry.md exists in the current project root.
-2. If it does not exist: say "No encuentro el skill registry para este proyecto. Lo inicializo ahora."
-   and run the skill registry initialization immediately.
-3. If it exists: read it silently and proceed.
-```
-
-**VS Code Copilot**: `%APPDATA%\Code\User\prompts\auto-registry.md` (mismo contenido)
-
-A partir de ahora, cuando abras cualquier repo en cualquiera de los dos editores, el agente comprueba solo si el registry existe. Si no existe, lo crea sin que tengas que pedírselo. Si existe, lo lee en silencio y empieza a trabajar.
+Los archivos están en tu máquina en rutas que gentle-ai nunca toca:
+- **Cursor**: `%USERPROFILE%\.cursor\rules\auto-registry.mdc`
+- **VS Code**: `%APPDATA%\Code\User\prompts\auto-registry.md`
 
 **Estos archivos sobreviven cualquier `gentle-ai sync` o `upgrade`** porque tienen nombres distintos a los gestionados (`gentle-ai.mdc` y `gentle-ai.instructions.md`).
 
@@ -895,12 +863,12 @@ A partir de ahora, cuando abras cualquier repo en cualquiera de los dos editores
 
 ### Flujo al crear o modificar un skill propio
 
-El flujo es ahora de dos pasos, no tres:
+El flujo es de dos pasos:
 
 ```
 1. Crear / modificar skill en el chat del agente (en Cursor o VS Code)
    → el agente lo sincroniza automáticamente al otro editor (regla skill-sync)
-2. En el chat: "actualiza el skill registry"
+2. Si es un skill nuevo: agregá su path a auto-stack.mdc para que se cargue automáticamente
 ```
 
 No hace falta ejecutar ningún script manualmente. Si por alguna razón el agente no sincronizó (por ejemplo, modificaste el SKILL.md directamente en el editor sin pasar por el chat), usa el script manual de PowerShell de la sección anterior para forzar la sincronización en bloque.
@@ -927,15 +895,13 @@ No hace falta ejecutar ningún script manualmente. Si por alguna razón el agent
 
 | Situación | Escribe en el chat |
 |-----------|-------------------|
-| Proyecto nuevo, primera vez | `"inicializa el skill registry para este proyecto"` |
+| Verificar skills activos | `"que skills tenes cargados?"` |
 | Feature compleja | `"implementa X, usa sdd"` |
-| Confirmar que SDD está activo | `"¿tienes el skill registry cargado?"` |
-| Guardar una decisión en memoria | `"guarda en memoria que usamos X porque Y"` |
-| Recuperar contexto anterior | `"¿qué estábamos haciendo la última sesión?"` |
-| Crear skill de stack | `"usa skill-creator para crear un skill de [tu stack con tus convenciones]"` |
-| Actualizar el registry | `"actualiza el skill registry"` |
-| Revisar implementación | `"revisa esto con sdd-verify"` |
-| Forzar uso de skill concreto | `"usa el skill elixir-phoenix-stack para esta tarea"` |
+| Guardar decision en memoria | `"guarda en memoria que usamos X porque Y"` |
+| Recuperar contexto anterior | `"que estabamos haciendo la ultima sesion?"` |
+| Crear skill | `"usa skill-creator para crear un skill de [stack]"` |
+| Revisar implementacion | `"revisa esto con sdd-verify"` |
+| Forzar carga de skill | `"lee y aplica el skill elixir-phoenix-stack"` |
 
 ### Checklist de calidad: ¿está todo bien configurado?
 
@@ -946,7 +912,7 @@ No hace falta ejecutar ningún script manualmente. Si por alguna razón el agent
 - [ ] **Skills Elixir** en `~\.cursor\skills\` y `~\.copilot\skills\`: `elixir-phoenix-stack`, `elixir-antipatterns`, `elixir-error-monad`, `elixir-legacy-strategy`, `elixir-amnesia-mnesia`
 - [ ] **Skills React/Python** en `~\.cursor\skills\` y `~\.copilot\skills\`: `react-python-stack`, `react-advanced`, `python-fastapi-ddd`, `python-antipatterns`
 - [ ] **Skill cross-stack** en ambos directorios: `testing-conventions`
-- [ ] En cada repo activo: `.atl\skill-registry.md` existe
+- [ ] En cada repo Elixir/Python: AGENTS.md existe en la raíz con las convenciones del proyecto
 - [ ] El agente no te pide que le expliques tus convenciones en cada sesión
 - [ ] El agente sugiere SDD espontáneamente cuando la tarea es grande
 - [ ] Al crear un skill nuevo, el agente lo sincroniza automáticamente al otro editor
