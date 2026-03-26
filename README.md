@@ -87,6 +87,18 @@ La tarea queda programada todos los días a las **09:00 AM**. Si ese día no hub
 .\sync.ps1
 ```
 
+**Ejecutar la tarea ahora sin esperar a las 09:00 AM:**
+
+```powershell
+Start-ScheduledTask -TaskName 'dotfiles-ai-sync'
+```
+
+**Eliminar la tarea (si cambias de PC o quieres reconfigurar):**
+
+```powershell
+Unregister-ScheduledTask -TaskName 'dotfiles-ai-sync' -Confirm:$false
+```
+
 ## Engram (memoria persistente)
 
 La memoria de las sesiones vive en `%USERPROFILE%\.engram\engram.db`.  
