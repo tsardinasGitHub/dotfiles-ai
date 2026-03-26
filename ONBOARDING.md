@@ -1,4 +1,4 @@
-﻿# Gentle AI — Onboarding Completo
+# Gentle AI — Onboarding Completo
 
 > **Configurado para:** React + Python / Elixir | Cursor + VS Code Copilot | Windows
 
@@ -411,110 +411,71 @@ Resultado esperado: `Verification checks: 64 passed, 0 failed`
 
 ---
 
-### Fase 1 — Personalización global por stack (hazlo una vez por stack)
+### Fase 1 — Crear skills globales por stack (hazlo una vez por stack)
 
-Esta fase configura skills globales que aplican a todos tus proyectos de ese stack, sin riesgo de ser sobreescritos en upgrades futuros.
+Esta fase ya está completada en tu caso — los 10 skills existen en `~\.cursor\skills\`. Está documentada aquí para referencia si en el futuro creas skills adicionales.
 
-#### 1.1 — Crear el skill para React + Python
-
-Abre Cursor en cualquier proyecto y escribe en el chat:
+**Cómo crear un skill nuevo:**
 
 ```
-Usa el skill-creator para crear un skill llamado "react-python-stack" con estas convenciones:
+Usa el skill-creator para crear un skill llamado "[nombre]" con estas convenciones:
+[tus convenciones]
 
-Frontend (React):
-- React 19 con Server Components y hooks modernos
-- Estado global con Zustand (no Redux ni Context para estado global)
-- Server state con TanStack Query v5
-- Estilos con Tailwind CSS, no CSS-in-JS
-- Componentes siempre funcionales, nunca de clase
-- Estructura feature-based: cada feature tiene su carpeta con componente, hook, types y test
-- Tests con Vitest + Testing Library (no Enzyme)
-- Validación de formularios con React Hook Form + Zod
-
-Backend (Python):
-- FastAPI como framework principal [ajusta si usas Django/Flask]
-- Tipado estricto con Pydantic v2
-- Tests con pytest + pytest-asyncio para async
-- Estructura por dominio, no por tipo de archivo
-- SQLAlchemy con Alembic para migraciones [o el ORM que uses]
-
-Decisiones de equipo:
-- Commits en inglés, PRs en español
-- Sin comentarios que expliquen qué hace el código, solo por qué
-- Tipos explícitos siempre, no inferidos cuando haya ambigüedad
+Guardalo en C:\Users\tsard\.cursor\skills\[nombre]\SKILL.md
 ```
 
-El agente creará el skill usando el `skill-creator` instalado. Pedirle explícitamente que lo guarde en `%USERPROFILE%\.cursor\skills\react-python-stack\SKILL.md`.
+La regla `skill-sync` lo sincroniza automáticamente a `~\.copilot\skills\`. No hace falta copiarlo manualmente.
 
-Luego replicarlo en VS Code Copilot:
+#### Por qué los skills nativos se cargan solos y los tuyos no (de entrada)
 
-```powershell
-# Copiar el skill al directorio de VS Code Copilot
-Copy-Item -Recurse "$env:USERPROFILE\.cursor\skills\react-python-stack" "$env:USERPROFILE\.copilot\skills\react-python-stack"
-```
+Los skills nativos de gentle-ai (`sdd-*`, `go-testing`, `skill-creator`) están en la **tabla de detección del orquestador** (`gentle-ai.mdc`) — los conoce de fábrica.
 
-#### 1.2 — Crear el skill para Elixir
-
-```
-Usa el skill-creator para crear un skill llamado "elixir-phoenix-stack" con estas convenciones:
-
-- Phoenix 1.7 con LiveView para interfaces reactivas
-- Ecto con PostgreSQL, migraciones siempre con timestamps
-- GenServers con estado definido en structs tipados (defstruct con @type t)
-- Supervisores con estrategia :one_for_one por defecto salvo justificación
-- Pattern matching sobre condicionales (case/cond sobre if/else anidados)
-- Pipe operator para transformaciones de datos, no variables intermedias
-- Bounded Contexts como estructura de módulos (no MVC plano)
-- Tests con ExUnit + Mox para mocks (no test de implementación, test de comportamiento)
-- Doctests en funciones públicas de módulos de dominio
-- Sin abreviaciones en nombres de variables ni módulos
-
-Convenciones de LiveView:
-- handle_event para interacciones de usuario
-- Estado en assigns, no en procesos separados salvo necesidad real
-- Componentes funcionales para UI reutilizable
-```
-
-Guardarlo en `%USERPROFILE%\.cursor\skills\elixir-phoenix-stack\SKILL.md` y replicar en `.copilot`.
-
-#### 1.3 — Verificar que los skills están en su sitio
-
-```powershell
-ls "$env:USERPROFILE\.cursor\skills\"
-# Debes ver: sdd-*, go-testing, skill-creator, _shared, react-python-stack, elixir-phoenix-stack
-```
-
-#### 1.4 — Crear un skill de testing cross-stack (opcional pero recomendado)
-
-```
-Usa el skill-creator para crear un skill llamado "testing-conventions" con estas convenciones
-de testing que aplican a todos nuestros proyectos:
-
-- Tests que prueban comportamiento, no implementación
-- Arrange-Act-Assert como estructura interna
-- Un test = una aserción de comportamiento (pueden ser múltiples asserts si es la misma cosa)
-- Nombres descriptivos: "should [comportamiento] when [condición]"
-- Sin mocks de módulos enteros, mockear interfaces/contratos específicos
-- Tests de integración para flujos críticos, no solo unitarios
-- No testear getters/setters triviales
-```
+Tus skills personalizados son externos. El orquestador los encuentra buscando en **Engram** (`mem_search("skill-registry", project)`). Eso significa que para cada proyecto, hay que registrarlos en Engram **una sola vez**. Después de eso, se cargan automáticamente en cada sesión sin hacer nada más.
 
 ---
 
-### Fase 2 — Cada vez que abres un repo nuevo
+### Fase 2 — Primera vez en un repo nuevo (5 minutos, una sola vez por proyecto)
 
-> Con las reglas globales instaladas, esto es prácticamente automático.
+#### Paso 1 — Inicializar SDD
 
-#### Paso 1 — Abrir el repo en tu editor
+En el chat del agente en ese proyecto:
 
-Ábrelo normalmente en Cursor o VS Code. La regla `auto-stack` detectará el stack al inicio de la conversación y cargará los skills correspondientes leyendo sus archivos SKILL.md directamente. La regla `auto-registry` leerá el `AGENTS.md` del proyecto si existe.
+```
+Inicializá SDD para este proyecto.
+```
 
-**No necesitas hacer nada más para que los skills se carguen.**
+El skill `sdd-init` detecta el stack, lee convenciones existentes (`AGENTS.md`, `.cursorrules`) y guarda el contexto del proyecto en Engram.
 
-#### Paso 2 (recomendado) — Crear el AGENTS.md del proyecto
+#### Paso 2 — Registrar los skills personalizados en Engram
 
-Si el repo no tiene `AGENTS.md`, créalo en la raíz con las convenciones específicas de ese proyecto:
+Este es el paso clave. Hacelo UNA SOLA VEZ por proyecto:
+
+**Para proyectos Elixir** (como Leasing):
+```
+Guardá en Engram el skill registry para este proyecto con topic_key "skill-registry/leasing":
+- elixir-phoenix-stack: C:\Users\tsard\.cursor\skills\elixir-phoenix-stack\SKILL.md
+- elixir-antipatterns: C:\Users\tsard\.cursor\skills\elixir-antipatterns\SKILL.md
+- elixir-error-monad: C:\Users\tsard\.cursor\skills\elixir-error-monad\SKILL.md
+- elixir-legacy-strategy: C:\Users\tsard\.cursor\skills\elixir-legacy-strategy\SKILL.md
+- elixir-amnesia-mnesia: C:\Users\tsard\.cursor\skills\elixir-amnesia-mnesia\SKILL.md
+- testing-conventions: C:\Users\tsard\.cursor\skills\testing-conventions\SKILL.md
+```
+
+**Para proyectos React + Python** (como PAE):
+```
+Guardá en Engram el skill registry para este proyecto con topic_key "skill-registry/pae":
+- react-python-stack: C:\Users\tsard\.cursor\skills\react-python-stack\SKILL.md
+- react-advanced: C:\Users\tsard\.cursor\skills\react-advanced\SKILL.md
+- python-fastapi-ddd: C:\Users\tsard\.cursor\skills\python-fastapi-ddd\SKILL.md
+- python-antipatterns: C:\Users\tsard\.cursor\skills\python-antipatterns\SKILL.md
+- testing-conventions: C:\Users\tsard\.cursor\skills\testing-conventions\SKILL.md
+```
+
+A partir de este momento el orquestador encontrará y cargará estos skills automáticamente en cada sesión futura de ese proyecto — sin que tengas que hacer nada más.
+
+#### Paso 3 — Crear el AGENTS.md del proyecto
+
+Si el repo no tiene `AGENTS.md`, créalo en la raíz con las convenciones específicas:
 
 ```markdown
 # NombreProyecto — Convenciones del proyecto
@@ -529,19 +490,9 @@ Elixir 1.16 / Phoenix 1.7 / [lo que aplique]
 - Usamos X porque Y
 ```
 
-Este archivo es leído automáticamente por el agente al inicio de cada sesión y complementa los skills globales con contexto específico del repo.
+La regla `auto-registry` lo lee en silencio al inicio de cada sesión.
 
-#### Paso 3 (opcional) — Verificar qué skills están activos
-
-Si quieres confirmar que los skills se cargaron, pregúntale al agente:
-
-```
-¿Qué skills tenés cargados en esta sesión?
-```
-
-Engram guardará este contexto y estará disponible en todas las sesiones futuras de este repo.
-
-#### Paso 4 (opcional) — GGA por proyecto si quieres cambiar modelo
+#### Paso 4 (opcional) — GGA si querés cambiar modelo de IA para este repo
 
 Desde Git Bash (no PowerShell):
 
@@ -553,6 +504,21 @@ gga install
 
 ---
 
+### Qué hacer cuando creás un skill nuevo
+
+Cada vez que creás un skill nuevo, el flujo es:
+
+```
+1. Crear el skill con skill-creator → se sincroniza solo a ambos editores (regla skill-sync)
+2. Para cada proyecto que deba usarlo, actualizá su Engram registry:
+   "Agregá este skill al registry de Engram del proyecto X:
+    [nombre]: C:\Users\tsard\.cursor\skills\[nombre]\SKILL.md"
+```
+
+El paso 2 es por proyecto, pero se hace una sola vez. Engram es persistente — no hay que repetirlo en cada sesión.
+
+---
+
 ### Fase 3 — Flujo de trabajo diario
 
 Una vez que tienes la Fase 0, 1 y 2 hechas, el flujo diario es:
@@ -561,10 +527,12 @@ Una vez que tienes la Fase 0, 1 y 2 hechas, el flujo diario es:
 
 Nada más. El agente ya tiene:
 - Contexto de sesiones anteriores (Engram)
-- Skills de tu stack cargados automáticamente (regla `auto-stack`)
-- Convenciones del proyecto cargadas (regla `auto-registry` lee el `AGENTS.md`)
+- Skills de tu stack cargados automáticamente desde Engram (el orquestador los busca con `mem_search("skill-registry", project)`)
+- Convenciones del proyecto cargadas desde `AGENTS.md` (regla `auto-registry`)
 - Documentación actualizada disponible (Context7)
 - SDD listo para activarse cuando lo necesite (orquestador)
+
+> Esto funciona así siempre que hayas hecho el **Paso 2 de la Fase 2** al abrir el proyecto por primera vez (registrar los skills en Engram). Es un setup de una sola vez.
 
 #### Lo que PUEDES decirle al agente para sacar más partido:
 
@@ -606,10 +574,10 @@ gentle-ai sync --agent cursor,vscode-copilot
 
 No necesitas hacer nada extra. La regla `auto-stack` carga los skills directamente desde sus archivos — si los archivos fueron actualizados por el sync, la próxima sesión los tendrá automáticamente.
 
-#### Cuándo actualizar la regla `auto-stack`:
+#### Cuándo actualizar el skill registry en Engram:
 
-- Después de crear un skill nuevo propio (agregar su path a `auto-stack.mdc`)
-- Si renombraste un skill existente
+- Después de crear un skill nuevo → actualizarlo en Engram para cada proyecto que lo deba usar
+- Si renombraste o moviste un skill existente → mismo proceso
 - Cuando añadas un `AGENTS.md` o `.cursorrules` al proyecto
 - Si el agente parece ignorar convenciones que debería conocer
 
