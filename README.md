@@ -2,6 +2,8 @@
 
 Configuración personal del ecosistema [gentle-ai](https://github.com/gentle-ai/gentle-ai) (Gentleman Programming): reglas globales y skills propios para Cursor y VS Code Copilot.
 
+Para entender el ecosistema en profundidad: [ONBOARDING.md](ONBOARDING.md)
+
 ## Contenido
 
 ```
@@ -60,6 +62,22 @@ Activar el sync automático diario (requiere administrador):
 ```
 
 Reiniciar Cursor y VS Code. Listo.
+
+## Mantenimiento mensual
+
+```powershell
+# Ver si hay versiones nuevas de gentle-ai
+gentle-ai update
+
+# Actualizar binarios
+gentle-ai upgrade --dry-run   # ver el plan primero
+gentle-ai upgrade             # ejecutar
+
+# Propagar cambios a Cursor y VS Code tras el upgrade
+gentle-ai sync --agent cursor,vscode-copilot
+```
+
+Después del sync, en el primer repo que abras pídele al agente: `"actualiza el skill registry"`.
 
 ## Sincronización manual en bloque
 
