@@ -119,6 +119,15 @@ Get-ScheduledTaskInfo -TaskName 'dotfiles-ai-sync' | Select-Object LastRunTime, 
 
 **Señal de alerta:** si la última entrada en `sync.log` tiene más de 2 días de antigüedad, la tarea dejó de correr — re-ejecutar `register-task.ps1` como administrador.
 
+## Estrategia de backup en capas
+
+Este repo y OneDrive/Google Drive son complementarios, no excluyentes:
+
+- **OneDrive o Google Drive** → sync inmediato (segundos tras cada cambio), protección ante fallo de hardware hoy. Apuntar las carpetas `~\.cursor\rules\` y `~\.cursor\skills\` a la carpeta sincronizada.
+- **Este repo (git)** → backup estructurado con historial de cambios y `restore.ps1` como procedimiento de restauración controlado en PC nueva. Excluye explícitamente los skills gestionados por gentle-ai para no pisarlos al restaurar.
+
+El riesgo de solo usar OneDrive: si restauras `~\.cursor\skills\` completa en una PC nueva antes de que gentle-ai instale sus propios skills, los sobreescribirías con versiones desactualizadas. El `restore.ps1` de este repo evita eso.
+
 ## Engram (memoria persistente)
 
 La memoria de las sesiones vive en `%USERPROFILE%\.engram\engram.db`.  
