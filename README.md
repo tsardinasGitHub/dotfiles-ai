@@ -1,6 +1,6 @@
 # dotfiles-ai
 
-Configuración personal del ecosistema AI: reglas globales y skills para Cursor y VS Code Copilot.
+Configuración personal del ecosistema [gentle-ai](https://github.com/gentle-ai/gentle-ai) (Gentleman Programming): reglas globales y skills propios para Cursor y VS Code Copilot.
 
 ## Contenido
 
@@ -64,6 +64,27 @@ Get-ChildItem "$env:USERPROFILE\.cursor\skills" -Directory |
         Copy-Item -Recurse -Force $_.FullName "$env:USERPROFILE\.copilot\skills\$($_.Name)"
         Write-Host "Sincronizado: $($_.Name)"
     }
+```
+
+## Sync automático (backup diario)
+
+`sync.ps1` copia las reglas y skills actuales al repo y hace commit + push automáticamente si detecta cambios. Se ejecuta vía Windows Task Scheduler sin intervención manual.
+
+**Registrar la tarea (una sola vez, como administrador):**
+
+```powershell
+cd "$env:USERPROFILE\dotfiles-ai"
+.\register-task.ps1
+```
+
+La tarea queda programada todos los días a las **09:00 AM**. Si ese día no hubo cambios, termina silenciosamente sin crear commits vacíos.
+
+**Rotación mensual de logs:** una vez al mes, `sync.ps1` copia el log local (`sync.log`) a `sync-archive.log` en el repo y lo sube a GitHub — sobreescribiendo el del mes anterior. Así siempre hay un mes de traza en el repo sin que el log crezca indefinidamente. `sync.log` queda solo en la PC (ignorado por git).
+
+**Ejecutar manualmente en cualquier momento:**
+
+```powershell
+.\sync.ps1
 ```
 
 ## Engram (memoria persistente)
