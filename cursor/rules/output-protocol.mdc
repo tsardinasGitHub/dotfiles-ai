@@ -1,0 +1,152 @@
+---
+description: PROTOCOLO_EJECUTADO output block and cognitive hook questions - mandatory on every response
+alwaysApply: true
+---
+
+# Output Protocol
+
+## PROTOCOLO_EJECUTADO — Mandatory on Every Response
+
+Every response MUST end with this block. No exceptions (read-only, pipeline, legacy, clarifications).
+
+```
+---
+**PROTOCOLO EJECUTADO**
+**Modo:** READ_ONLY | PIPELINE | LEGACY
+**Clasificación:** modification | read_only | ambiguous
+**Code Smells:** [detected smells] | none
+**Confianza:** N%
+
+[If modification:]
+**Archivo:** [path] | **Líneas:** [exact count]
+
+**Resumen:** [1–2 lines: what was done and why]
+**Decisiones Clave:** [key decision with reason]
+**ADR Created:** Yes: ADR-XXX — [title] | No: not needed
+
+[If PIPELINE:]
+**Fases:** P1_ARCH:[pass|fail] P2_DOC:[pass|fail] P3_TEST:[skipped|pass|fail] P4_VAL:[pass|fail]
+
+[If LEGACY:]
+**Acción:** extract | document | blocked | override
+**Razón:** [why legacy mode]
+
+[If modification — mandatory:]
+**Next Step:** [next logical architectural move or related task]
+**Próximos Pasos:**
+1. Estratégica: [question]
+2. Práctica: [question]
+3. Provocativa: [question]
+```
+
+If the block is missing: response is INCOMPLETE — add it before submitting.
+
+## Cognitive Hook — Próximos Pasos Questions
+
+After any modification, include exactly 3 questions in Próximos Pasos. Select by change type:
+
+**ARCHITECTURE**
+- What architectural decision becomes harder to reverse after this change?
+- Which module or dependency will hurt first if this decision is wrong?
+- If the system grows 10x, what breaks first?
+
+**CONTRACT**
+- Which future consumers are being constrained by this contract?
+- What breaks first if this contract is used incorrectly but reasonably?
+- Does this contract model the domain or hide internal coupling?
+
+**DOMAIN_LOGIC**
+- Which business rule remains implicit instead of explicit?
+- What invalid input could still pass unnoticed?
+- If this rule changes tomorrow, what part of the system suffers most?
+
+**INFRA**
+- Which external failure now directly impacts the domain?
+- Where will latency, timeout, or retries surface first?
+- Are we modeling a technical concern as a business concept?
+
+**REFACTOR**
+- Is this debt being reduced or just relocated?
+- What part of the code is now easier to delete?
+- If this refactor is wrong, how would we detect it quickly?
+
+**TESTING**
+- Which critical behavior is still unprotected?
+- Which test would fail first on an unintended change?
+- Do these tests verify behavior or implementation?
+
+## ADR Created — When to Create an ADR
+
+Create an ADR (`docs/adr/ADR-XXX-title.md`) when:
+- Installing a new library for state, data, or UI management
+- Choosing between 2+ architectural approaches
+- Implementing a security or compliance feature
+- Making a decision that affects multiple components
+
+Do NOT create an ADR for: bug fixes, refactoring following existing patterns, UI tweaks.
+
+If in doubt, create it. Better documented than forgotten.
+
+---
+
+**Rules**: never answer your own questions in the same response. Questions must introduce friction, not comfort. If read-only mode: Próximos Pasos = N/A.
+
+---
+
+## Reference Examples
+
+Use these as quality benchmarks for what a correct PROTOCOLO_EJECUTADO looks like.
+
+### READ_ONLY example
+```
+---
+**PROTOCOLO EJECUTADO**
+**Modo:** READ_ONLY | **Clasificación:** read_only (keyword: "revisa")
+**Resumen:** Investigué por qué no se requiere la cédula del mandatario cuando
+existe_mandato=true. Busqué en document_validator.ex y update_data_from_documents.ex.
+Identifiqué inconsistencia: otros tenants sí suman el mandatario al conteo de cédulas,
+pero don_carlos no.
+**Decisiones Clave:**
+- No modificar código (solo análisis solicitado)
+- Identificar inconsistencia entre don_carlos y otros tenants
+**Próximos Pasos:** N/A
+```
+
+### PIPELINE example
+```
+---
+**PROTOCOLO EJECUTADO**
+**Modo:** PIPELINE | **Clasificación:** modification (keyword: "agregar")
+**Confianza:** 95%
+**Archivo:** lib/leasing/document_validator.ex | **Líneas:** 765
+**Resumen:** Corregí el bug donde don_carlos no sumaba la cédula del mandatario al
+conteo de documentos requeridos. Agregué lógica para sumar +1 cédula cuando
+existe_mandato=true, igual que otros tenants. El archivo tiene 765L (bajo threshold 1500L).
+**Fases:** P1_ARCH:pass P2_DOC:pass P3_TEST:skipped P4_VAL:pass
+**Decisiones Clave:**
+- Modificar en lugar de extraer (función < 20L, fix aislado)
+- No crear tests (fix en función existente bien testeada)
+**ADR Created:** No: not needed (bug fix, no architectural change)
+**Next Step:** Revisar si otros tenants con condiciones similares tienen el mismo bug
+**Próximos Pasos:**
+1. Estratégica: ¿Qué impide que esta inconsistencia entre tenants vuelva a ocurrir?
+2. Práctica: ¿Existe un test que cubriría una regresión en este path para don_carlos?
+3. Provocativa: ¿Esta diferencia por tenant es un requisito de negocio o un bug acumulado?
+```
+
+### LEGACY example
+```
+---
+**PROTOCOLO EJECUTADO**
+**Modo:** LEGACY | **Clasificación:** modification
+**Confianza:** 40%
+**Archivo:** lib/leasing/core_processor.ex | **Líneas:** 2847
+**Resumen:** Archivo 2847L excede threshold 1500L. Bloqueé modificación y presenté
+opciones alternativas.
+**Acción:** blocked | **Razón:** 2847L > 1500L threshold (47% sobre el límite)
+**Opciones presentadas:**
+1. EXTRACT: crear módulo Leasing.DocumentValidation.MandatoCounter
+2. DOCUMENT: documentar comportamiento actual sin modificar
+3. OVERRIDE: usuario debe autorizar explícitamente
+**Próximos Pasos:** N/A (esperando decisión del usuario)
+```

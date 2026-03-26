@@ -1,0 +1,38 @@
+---
+description: Auto-mirror custom skills between Cursor and VS Code Copilot when created or modified
+alwaysApply: true
+---
+
+# Skill Sync — Keep Cursor and VS Code in sync (bidirectional)
+
+Whenever you **create or modify** a skill file, mirror it to the other editor immediately.
+
+## If working in Cursor (modified `~\.cursor\skills\<skill-name>`)
+
+```powershell
+Copy-Item -Recurse -Force "$env:USERPROFILE\.cursor\skills\<skill-name>" "$env:USERPROFILE\.copilot\skills\<skill-name>"
+```
+
+## If working in VS Code Copilot (modified `~\.copilot\skills\<skill-name>`)
+
+```powershell
+Copy-Item -Recurse -Force "$env:USERPROFILE\.copilot\skills\<skill-name>" "$env:USERPROFILE\.cursor\skills\<skill-name>"
+```
+
+Replace `<skill-name>` with the actual skill directory name.
+
+## When this applies
+
+- Creating a new skill (new directory + SKILL.md) — mirror to the other editor
+- Updating an existing SKILL.md — mirror to the other editor
+- Deleting a skill — also delete from the other editor's directory
+
+## When this does NOT apply
+
+- Reading or referencing a skill (no write, no sync needed)
+- Skills installed by `gentle-ai` in `~\.cursor\skills\sdd-*`, `go-testing`, `skill-creator`, `_shared` — managed by gentle-ai, do NOT sync manually
+
+## After syncing
+
+Confirm with a one-liner: "Skill sincronizado en ambos editores."
+Do not ask for confirmation before running the sync — just do it.

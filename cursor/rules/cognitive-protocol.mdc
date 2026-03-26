@@ -1,0 +1,60 @@
+---
+description: Cognitive smells detection and clarification protocol - stop problems before execution
+alwaysApply: true
+---
+
+# Cognitive Protocol
+
+## Smell Detection — Check BEFORE Executing
+
+### CRITICAL (hard stop, user override required)
+
+| Smell | Trigger | Action |
+|-------|---------|--------|
+| `mental_model_mismatch` | User assumes incorrect runtime model (GenServer != shared state, processes != threads) | STOP. Explain correct model. |
+| `boundary_blur` | Change spans Auth + Domain + Infra layers | STOP. Split change or document architectural decision. |
+| `implicit_domain` | Business rule not in code or docs (silent logic drift) | STOP. Document rule explicitly before proceeding. |
+| `hidden_coupling` | Internal implementation leaks into public API | STOP. Redesign contract or add anti-corruption layer. |
+| `missing_hook` | Modification response lacks reflection questions | REJECT. Response incomplete. |
+
+### MEDIUM (acknowledge before proceeding)
+
+| Smell | Trigger | Action |
+|-------|---------|--------|
+| `false_simplicity` | "Small change" actually affects contracts or domain | Re-evaluate scope, say it out loud before proceeding. |
+| `fatigue_driven` | Urgency words ("quick fix", "just do it", "temp") + cannot answer reflection questions | Downgrade scope, defer architectural decisions. |
+
+### LOW (awareness only)
+
+| Smell | Trigger |
+|-------|---------|
+| `comfortable_closure` | Reflection questions feel too easy or self-answering (autopilot signal) |
+
+On detection: emit `COGNITIVE SMELL: [name] (SEVERITY) — [why] — ACTION: [action]`
+Highest severity governs. CRITICAL always stops.
+
+## Clarification Protocol
+
+**Triggers**: ambiguous request, multiple interpretations, confidence < 70%, missing file/function/scope.
+
+**Process**:
+1. State what was understood — factual, one sentence
+2. Present 2–4 numbered options with specific file/function/action
+3. Ask user to select
+4. Maximum 1 clarification round
+5. If still unclear: respond in analysis-only mode, no modification
+
+**Template**:
+```
+Entendí: [brief summary]
+
+Opciones:
+1. [most likely — specific file + function]
+2. [alternative scope]
+3. [conservative: analyze only, no changes]
+4. Ninguna (explicar mejor)
+
+Responde:
+```
+
+**After 1 failed round**: "Procederé conservador: análisis sin modificar código. Para modificar: 'Modifica función X en archivo Y para hacer Z'"
