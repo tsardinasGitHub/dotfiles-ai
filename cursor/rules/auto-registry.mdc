@@ -1,14 +1,14 @@
 ---
-description: Auto-check skill registry at session start
+description: Auto-load project conventions from AGENTS.md at session start
 alwaysApply: true
 ---
 
-# Skill Registry Auto-Check
+# Project Conventions Auto-Load
 
 At the start of every new conversation, before doing anything else:
 
-1. Check if `.atl/skill-registry.md` exists in the current project root.
-2. If it **does not exist**: proactively say "No encuentro el skill registry para este proyecto. Lo inicializo ahora." and run the skill registry initialization immediately, without waiting for the user to ask.
-3. If it **exists**: read it silently and proceed. Do not mention it to the user.
+1. Check if `AGENTS.md` exists in the current project root.
+2. If it **exists**: read it silently and apply all its conventions. Do not mention it to the user.
+3. If it **does not exist**: proceed normally. Do not mention it.
 
-This check is silent and automatic. Only speak up if the registry is missing.
+This check is silent and automatic. Never announce it.

@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Stack Auto-Detection
 
-After checking the skill registry, detect the project stack and load ALL matching skills silently.
+At the start of every conversation, detect the project stack and load ALL matching skills by reading their SKILL.md files directly.
 
 ## Step 1 — Detect the stack
 
@@ -17,46 +17,39 @@ Check these indicator files in the project root:
 | `package.json` containing `"react"` | React |
 | `requirements.txt` OR `pyproject.toml` OR `Pipfile` OR `uv.lock` | Python |
 
-A project can match multiple stacks (e.g. React + Python fullstack).
+A project can match multiple stacks simultaneously.
 
 ## Step 2 — Load all matching skills
 
-For each detected stack, load every skill from this map that exists in the registry:
+For each detected stack, read and apply every SKILL.md from the paths below that physically exists on disk.
 
 **Elixir stack:**
-- `elixir-phoenix-stack`
-- `elixir-antipatterns`
-- `elixir-error-monad`
-- `elixir-legacy-strategy`
-- `elixir-amnesia-mnesia` (only if `defdatabase`, `deftable`, or `Amnesia` appear in project files)
+- `C:\Users\tsard\.cursor\skills\elixir-phoenix-stack\SKILL.md`
+- `C:\Users\tsard\.cursor\skills\elixir-antipatterns\SKILL.md`
+- `C:\Users\tsard\.cursor\skills\elixir-error-monad\SKILL.md`
+- `C:\Users\tsard\.cursor\skills\elixir-legacy-strategy\SKILL.md`
+- `C:\Users\tsard\.cursor\skills\elixir-amnesia-mnesia\SKILL.md` — only if `defdatabase`, `deftable`, or `Amnesia` appear in project files
 
 **React stack:**
-- `react-python-stack`
-- `react-advanced`
-- `react-components` (or fallback to `react-python-stack` + `react-advanced` if granular skills don't exist yet)
-- `react-state`
-- `react-testing`
+- `C:\Users\tsard\.cursor\skills\react-python-stack\SKILL.md`
+- `C:\Users\tsard\.cursor\skills\react-advanced\SKILL.md`
 
 **Python stack:**
-- `python-fastapi-ddd`
-- `python-antipatterns`
-- `python-fastapi` (or `python-django`, `python-flask` — load whichever exists)
-- `python-testing`
+- `C:\Users\tsard\.cursor\skills\react-python-stack\SKILL.md`
+- `C:\Users\tsard\.cursor\skills\python-fastapi-ddd\SKILL.md`
+- `C:\Users\tsard\.cursor\skills\python-antipatterns\SKILL.md`
 
-**Cross-stack (load always if present):**
-- `testing-conventions`
+**Cross-stack (load always if the file exists):**
+- `C:\Users\tsard\.cursor\skills\testing-conventions\SKILL.md`
 
-## Step 3 — Fallback
+## Step 3 — How to load a skill
 
-If a specific granular skill is not found in the registry, try the composite skill:
-- React or Python → `react-python-stack`
-- Elixir → `elixir-phoenix-stack`
-
-If the composite skill is not found either, proceed without it. Do not mention it.
+To load a skill: read the full content of the SKILL.md file and apply all its rules and patterns as active constraints for this conversation.
 
 ## Behavior rules
 
 - Load all matching skills, not just the first one found.
 - This detection is **completely silent** — never announce which skills loaded.
-- If the user asks "¿qué skills tienes cargados?", list them.
-- If no stack is detected (pure config repo, dotfiles, etc.), proceed normally.
+- If the user asks "¿qué skills tenés cargados?", list them.
+- If a SKILL.md file does not exist at the path, skip it silently.
+- If no stack is detected (dotfiles, pure config repo, etc.), proceed normally without loading any stack skill.
