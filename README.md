@@ -55,6 +55,8 @@ cd "$env:USERPROFILE\dotfiles-ai"
 .\restore.ps1
 ```
 
+`restore.ps1` también genera en tu PC los archivos `*.instructions.md` en `%APPDATA%\Code\User\prompts\` para que Copilot inyecte automáticamente tus skills personalizadas.
+
 Activar el sync automático diario (requiere administrador):
 
 ```powershell

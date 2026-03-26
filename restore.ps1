@@ -40,6 +40,10 @@ Write-Host ""
 if ($DryRun) {
     Write-Host "DRY-RUN completado. Ejecuta sin -DryRun para aplicar."
 } else {
+    Write-Host ""
+    Write-Host "=== Generando *.instructions.md para Copilot ==="
+    & "$repo\\generate-copilot-skill-prompts.ps1"
+    Write-Host ""
     Write-Host "Restauración completada."
     Write-Host ""
     Write-Host "Próximos pasos:"
