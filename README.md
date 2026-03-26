@@ -128,6 +128,31 @@ Este repo y OneDrive/Google Drive son complementarios, no excluyentes:
 
 El riesgo de solo usar OneDrive: si restauras `~\.cursor\skills\` completa en una PC nueva antes de que gentle-ai instale sus propios skills, los sobreescribirías con versiones desactualizadas. El `restore.ps1` de este repo evita eso.
 
+**Configurar OneDrive (una sola vez, PowerShell como administrador):**
+
+OneDrive solo sincroniza lo que está dentro de su carpeta. La solución es mover las carpetas adentro de OneDrive y crear symlinks en la ubicación original — Cursor no nota la diferencia.
+
+```powershell
+# Crear carpeta de destino en OneDrive
+New-Item -ItemType Directory -Path "$env:USERPROFILE\OneDrive\dotfiles-cursor" -Force
+
+# Mover las carpetas dentro de OneDrive
+Move-Item "$env:USERPROFILE\.cursor\rules"  "$env:USERPROFILE\OneDrive\dotfiles-cursor\rules"
+Move-Item "$env:USERPROFILE\.cursor\skills" "$env:USERPROFILE\OneDrive\dotfiles-cursor\skills"
+
+# Crear symlinks en la ubicación original
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\rules"  -Target "$env:USERPROFILE\OneDrive\dotfiles-cursor\rules"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\skills" -Target "$env:USERPROFILE\OneDrive\dotfiles-cursor\skills"
+```
+
+Verificar que quedó bien:
+
+```powershell
+Get-Item "$env:USERPROFILE\.cursor\rules" | Select-Object Name, LinkType, Target
+```
+
+Debe mostrar `LinkType: SymbolicLink`. Desde ese momento cualquier cambio en rules o skills se sube a OneDrive automáticamente.
+
 ## Engram (memoria persistente)
 
 La memoria de las sesiones vive en `%USERPROFILE%\.engram\engram.db`.  
