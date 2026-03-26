@@ -133,27 +133,30 @@ El riesgo de solo usar OneDrive: si restauras `~\.cursor\skills\` completa en un
 OneDrive solo sincroniza lo que está dentro de su carpeta. La solución es mover las carpetas adentro de OneDrive y crear symlinks en la ubicación original — Cursor no nota la diferencia.
 
 ```powershell
-# Crear carpeta de destino en OneDrive
+# Crear carpetas de destino en OneDrive
 New-Item -ItemType Directory -Path "$env:USERPROFILE\OneDrive\dotfiles-cursor" -Force
+New-Item -ItemType Directory -Path "$env:USERPROFILE\OneDrive\engram" -Force
 
 # Mover las carpetas dentro de OneDrive
 Move-Item "$env:USERPROFILE\.cursor\rules"  "$env:USERPROFILE\OneDrive\dotfiles-cursor\rules"
 Move-Item "$env:USERPROFILE\.cursor\skills" "$env:USERPROFILE\OneDrive\dotfiles-cursor\skills"
+Move-Item "$env:USERPROFILE\.engram"        "$env:USERPROFILE\OneDrive\engram"
 
 # Crear symlinks en la ubicación original
 New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\rules"  -Target "$env:USERPROFILE\OneDrive\dotfiles-cursor\rules"
 New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\skills" -Target "$env:USERPROFILE\OneDrive\dotfiles-cursor\skills"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.engram"        -Target "$env:USERPROFILE\OneDrive\engram"
 ```
 
 Verificar que quedó bien:
 
 ```powershell
-Get-Item "$env:USERPROFILE\.cursor\rules" | Select-Object Name, LinkType, Target
+Get-Item "$env:USERPROFILE\.cursor\rules", "$env:USERPROFILE\.cursor\skills", "$env:USERPROFILE\.engram" |
+    Select-Object Name, LinkType, Target
 ```
 
-Debe mostrar `LinkType: SymbolicLink`. Desde ese momento cualquier cambio en rules o skills se sube a OneDrive automáticamente.
+Debe mostrar `LinkType: SymbolicLink` en los tres. Desde ese momento cualquier cambio en rules, skills y memoria de Engram se sube a OneDrive automáticamente.
 
 ## Engram (memoria persistente)
 
-La memoria de las sesiones vive en `%USERPROFILE%\.engram\engram.db`.  
-Recomendado: sincronizar la carpeta `~\.engram\` con OneDrive o Google Drive para no perderla ante fallo de hardware.
+La memoria de las sesiones vive en `%USERPROFILE%\.engram\engram.db`. Queda protegida automáticamente si configuraste el symlink de OneDrive de la sección anterior.
