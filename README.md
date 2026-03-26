@@ -99,6 +99,26 @@ Start-ScheduledTask -TaskName 'dotfiles-ai-sync'
 Unregister-ScheduledTask -TaskName 'dotfiles-ai-sync' -Confirm:$false
 ```
 
+## Verificar que el sync está funcionando
+
+El log se escribe **siempre** al correr, haya o no cambios. Si no hay entrada de hoy, la tarea no corrió.
+
+**Ver las últimas entradas del log:**
+
+```powershell
+Get-Content "$env:USERPROFILE\dotfiles-ai\sync.log" -Tail 20
+```
+
+**Ver cuándo corrió por última vez y si fue exitoso:**
+
+```powershell
+Get-ScheduledTaskInfo -TaskName 'dotfiles-ai-sync' | Select-Object LastRunTime, LastTaskResult
+```
+
+`LastTaskResult = 0` significa éxito. Cualquier otro valor indica un error.
+
+**Señal de alerta:** si la última entrada en `sync.log` tiene más de 2 días de antigüedad, la tarea dejó de correr — re-ejecutar `register-task.ps1` como administrador.
+
 ## Engram (memoria persistente)
 
 La memoria de las sesiones vive en `%USERPROFILE%\.engram\engram.db`.  
